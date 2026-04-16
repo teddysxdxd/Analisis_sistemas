@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Esperanza Agro</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        button { background: #002d5a; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .status { color: #666; font-size: 12px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Nueva Cosecha</h2>
+        <form id="harvestForm">
+            <select id="producto" required>
+                <option value="Frijol">Frijol</option>
+                <option value="Maiz">Maíz</option>
+                <option value="Hortaliza">Hortaliza</option>
+            </select>
+            <input type="text" id="variedad" placeholder="Variedad (Ej: Negro)">
+            <input type="number" id="cantidad" placeholder="Cantidad" required>
+            <select id="unidad">
+                <option value="Quintales">Quintales</option>
+                <option value="Libras">Libras</option>
+            </select>
+            <input type="text" id="referencia" placeholder="Referencia (Calle/Zona)" required>
+            <button type="submit">PUBLICAR</button>
+        </form>
+        <p id="msg" class="status"></p>
+    </div>
+
+    <script>
+        const form = document.getElementById('harvestForm');
+        
+        // Guardar borrador automáticamente (LocalStorage) para 2G/3G
+        form.addEventListener('input', () => {
+            const draft = {
+                producto: document.getElementById('producto').value,
+                variedad: document.getElementById('variedad').value,
+                cantidad: document.getElementById('cantidad').value,
+                unidad: document.getElementById('unidad').value,
+                referencia: document.getElementById('referencia').value
+            };
+            localStorage.setItem('draft_cosecha', JSON.stringify(draft));
+        });
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const data = JSON.parse(localStorage.getItem('draft_cosecha'));
+            
+            try {
+                const response = await fetch('/api/cosecha', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if(response.ok) {
+                    alert("¡Cosecha subida con éxito!");
+                    localStorage.removeItem('draft_cosecha');
+                    form.reset();
+                }
+            } catch (err) {
+                document.getElementById('msg').innerText = "Sin conexión. Los datos están guardados en el teléfono.";
+            }
+        };
+    </script>
+</body>
+</html>
