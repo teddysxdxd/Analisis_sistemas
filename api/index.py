@@ -9,6 +9,7 @@ app.secret_key = 'umg_analisis_sistema_key'
 def index():
     # Renderiza el archivo que tienes en /templates/index.html
     return render_template('index.html')
+app = app
 
 @app.route('/api/login', methods=['POST'])
 def login():
