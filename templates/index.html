@@ -3,70 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Esperanza Agro</title>
+    <title>La Esperanza Agro - Prototipo</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        button { background: #002d5a; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .status { color: #666; font-size: 12px; text-align: center; }
+        :root { --primary: #0099ff; --secondary: #002d5a; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding-top: 20px; }
+        .mobile-container { width: 100%; max-width: 360px; background: white; min-height: 640px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+        .header { background: white; padding: 20px; text-align: center; }
+        .logo-img { width: 80px; margin-bottom: 10px; }
+        
+        /* Pantallas */
+        .screen { padding: 20px; display: none; }
+        .active { display: block; }
+
+        /* Estilo Inputs tipo Mockup */
+        label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; text-transform: uppercase; color: #444; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #000; border-radius: 4px; box-sizing: border-box; }
+        
+        /* Botón estilo Mockup */
+        .btn-entrar { 
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); 
+            color: white; border: none; padding: 15px; width: 100%; 
+            border-radius: 30px; font-weight: bold; font-size: 18px; 
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .btn-publicar { background: var(--secondary); color: white; border: none; padding: 15px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        
+        .nav-links { text-align: center; margin-top: 10px; font-size: 12px; text-decoration: underline; color: #666; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>Nueva Cosecha</h2>
+
+<div class="mobile-container">
+    <div id="loginScreen" class="screen active">
+        <div class="header">
+            <img src="https://cdn-icons-png.flaticon.com/512/1147/1147832.png" class="logo-img" alt="maiz">
+            <div style="font-weight: bold;">AYUDA | SALIR</div>
+        </div>
+        <div style="padding: 20px;">
+            <label>TELÉFONO / USUARIO</label>
+            <input type="text" id="user" placeholder="Ej. 55554433">
+            
+            <label>CONTRASEÑA</label>
+            <input type="password" id="pass" placeholder="********">
+            
+            <button class="btn-entrar" onclick="showScreen('harvestScreen')">ENTRAR →</button>
+            <div class="nav-links">RECUPERAR CONTRASEÑA</div>
+        </div>
+    </div>
+
+    <div id="harvestScreen" class="screen">
+        <h3 style="text-align: center; color: var(--secondary);">NUEVA DISPONIBILIDAD</h3>
         <form id="harvestForm">
-            <select id="producto" required>
-                <option value="Frijol">Frijol</option>
-                <option value="Maiz">Maíz</option>
-                <option value="Hortaliza">Hortaliza</option>
+            <label>PRODUCTO</label>
+            <select id="producto">
+                <option value="Frijol Negro">Frijol Negro</option>
+                <option value="Maíz Amarillo">Maíz Amarillo</option>
             </select>
-            <input type="text" id="variedad" placeholder="Variedad (Ej: Negro)">
-            <input type="number" id="cantidad" placeholder="Cantidad" required>
+
+            <label>VARIEDAD (Opcional)</label>
+            <input type="text" id="variedad" placeholder="Ej. Criollo">
+
+            <label>CANTIDAD</label>
+            <input type="number" id="cantidad" value="50">
+
+            <label>UNIDAD</label>
             <select id="unidad">
                 <option value="Quintales">Quintales</option>
                 <option value="Libras">Libras</option>
             </select>
-            <input type="text" id="referencia" placeholder="Referencia (Calle/Zona)" required>
-            <button type="submit">PUBLICAR</button>
+
+            <label>FECHA DISPONIBLE</label>
+            <input type="date" id="fecha">
+
+            <button type="submit" class="btn-publicar">PUBLICAR EN CATÁLOGO</button>
         </form>
-        <p id="msg" class="status"></p>
     </div>
+</div>
 
-    <script>
-        const form = document.getElementById('harvestForm');
-        
-        // Guardar borrador automáticamente (LocalStorage) para 2G/3G
-        form.addEventListener('input', () => {
-            const draft = {
-                producto: document.getElementById('producto').value,
-                variedad: document.getElementById('variedad').value,
-                cantidad: document.getElementById('cantidad').value,
-                unidad: document.getElementById('unidad').value,
-                referencia: document.getElementById('referencia').value
-            };
-            localStorage.setItem('draft_cosecha', JSON.stringify(draft));
-        });
+<script>
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
 
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const data = JSON.parse(localStorage.getItem('draft_cosecha'));
-            
-            try {
-                const response = await fetch('/api/cosecha', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data)
-                });
-                if(response.ok) {
-                    alert("¡Cosecha subida con éxito!");
-                    localStorage.removeItem('draft_cosecha');
-                    form.reset();
-                }
-            } catch (err) {
-                document.getElementById('msg').innerText = "Sin conexión. Los datos están guardados en el teléfono.";
-            }
+    document.getElementById('harvestForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = {
+            producto: document.getElementById('producto').value,
+            variedad: document.getElementById('variedad').value,
+            cantidad: document.getElementById('cantidad').value,
+            unidad: document.getElementById('unidad').value,
+            referencia: "Plaza Central" // Dato por defecto
         };
-    </script>
+
+        try {
+            const res = await fetch('/api/cosecha', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if(res.ok) {
+                alert("¡Publicado en catálogo exitosamente!");
+                showScreen('loginScreen');
+            }
+        } catch (err) {
+            alert("Error al conectar con el servidor");
+        }
+    };
+</script>
 </body>
 </html>
