@@ -1,0 +1,17 @@
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Mantenemos las rutas para que el frontend no falle, 
+# aunque la lógica fuerte ahora estará en el JS para Vercel
+@app.route('/api/login', methods=['POST'])
+def login():
+    return jsonify({"status": "success"}), 200
+
+@app.route('/api/cosecha', methods=['POST'])
+def guardar_cosecha():
+    return jsonify({"status": "success"}), 201
